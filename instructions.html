@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Instructions - IPL Auction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #1e3a8a;
+    }
+    .btn {
+      margin-top: 30px;
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #1e40af;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover {
+      background-color: #2563eb;
+    }
+    ul {
+      margin-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Instructions - IPL Auction</h1>
+    
+    <p>Welcome to the IPL Administrator Auction Panel. This interface helps you conduct the IPL Auction smoothly and systematically using real IPL-style auction rules and structure.</p>
+
+    <h2>🎯 Auction Structure</h2>
+    <p>The auction will be conducted in sets, just like the official IPL auction:</p>
+    <ul>
+      <li><strong>Set 1 - Marquee Players</strong>: Players with base price ≥ ₹2 Crore</li>
+      <li><strong>Set 2 - Batters</strong></li>
+      <li><strong>Set 3 - All-rounders</strong></li>
+      <li><strong>Set 4 - Wicketkeepers</strong></li>
+      <li><strong>Set 5 - Fast Bowlers</strong></li>
+      <li><strong>Set 6 - Spinners</strong></li>
+    </ul>
+
+    <h2>🔄 Auction Flow</h2>
+    <ul>
+      <li>Each player is fetched randomly from the current set.</li>
+      <li>Details shown: Name, Role, Base Price, Country, etc.</li>
+      <li>You manually input the bidding history (team and price).</li>
+      <li>Click <strong>“Sell Player”</strong> to finalize the sale.</li>
+    </ul>
+
+    <h2>📋 Live Summary Panel</h2>
+    <ul>
+      <li>All 10 teams are shown on the sidebar.</li>
+      <li>Under each team: players bought, price, total amount spent.</li>
+      <li>This updates automatically during the auction.</li>
+    </ul>
+
+    <h2>⚠️ Rules</h2>
+    <ul>
+      <li>Only 10 teams are allowed in the entire auction.</li>
+      <li>Each team can only buy players if they have enough budget (optional cap).</li>
+      <li>Players are marked as sold once finalized.</li>
+      <li>If the page reloads, the current player remains active until sold.</li>
+      <li>Unsold players are skipped and won’t reappear.</li>
+      <li>A maximum of 6 foreign players can be bought.</li>
+    </ul>
+
+    <h2>✅ Actions</h2>
+    <ul>
+      <li><strong>Start Auction</strong>: Creates the <code>currentplayers</code> table to begin the auction.</li>
+      <li><strong>Advance</strong>: Loads the actual auction admin page to begin bidding.</li>
+      <li><strong>Sell Player</strong>: Assigns the player to a team with the final bid price.</li>
+    </ul>
+
+    <button class="btn" onclick="startAuction()">Start Auction</button>
+    <a href="auction-admin.html" class="btn" id="advanceBtn" style="display: none;">Advance to Auction</a>
+  </div>
+
+  <script>
+    function startAuction() {
+      fetch("startAuction.php")
+        .then(response => response.text())
+        .then(msg => {
+          alert(msg);
+          document.getElementById("advanceBtn").style.display = "inline-block";
+        })
+        .catch(err => {
+          alert("Error starting auction: " + err);
+        });
+    }
+  </script>
+</body>
+</html>

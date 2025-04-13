@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+.dashboard {
+    display: flex;
+    width: 80%;
+    height: 80vh;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 25%;
+    padding: 20px;
+    background: #2c3e50;
+    color: white;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px;
+}
+
+.main-content {
+    flex: 1;
+    text-align: center;
+    padding: 50px;
+}
+
+.main-content h1 {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+}
+
+#create-party {
+    background: #28a745;
+}
+
+#join-party {
+    background: #007bff;
+}
+
+.profile {
+    width: 20%;
+    padding: 20px;
+    text-align: center;
+    background: #ecf0f1;
+}
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.logout{
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    background-color: #007bff;
+}
+
+input{
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 200px;
+    background-color:#007bff ;
+    margin-left: 20px;   
+    opacity: 0.92;
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="login.js" defer></script>
+</head>
+<body>
+
+    <div class="background-container">
+        <img src="Images/dhoni.jpg" class="active">
+        <img src="Images/virat.jpg">
+        <img src="Images/Rohit.webp">
+        <img src="Images/raina.webp">
+    </div>
+
+    <!-- Login Form -->
+    <div class="login-box">
+        <h2>Login</h2>
+        <form action="login.php" method="post">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <a href="register.html">Don't have an account? Register here</a>
+    </div>
+
+</body>
+</html>

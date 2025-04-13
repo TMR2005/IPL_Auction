@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IPL Admin Auction</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+    }
+    body,html{
+      height: auto;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+    }
+
+
+   .auction-container {
+      max-width: 95%;
+      width: 1000px;
+      margin: 40px auto;
+      padding: 2rem;
+      background: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      overflow-x: auto;
+    }
+
+    .player-info {
+      position: sticky;
+      top: 0;
+      padding:10px;
+    }
+
+   .player-info h2, .player-info p {
+      margin: 4px 0;
+      word-wrap: break-word;
+    }
+
+  table {
+      width: 3000px;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      color: white;
+      overflow-x: auto;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      text-align: left;
+      min-width: 120px;
+      overflow-x: auto;
+      width: 300px;
+    }
+
+    .btn {
+      background: #007bff;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1rem;
+      margin-right: 10px;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .btn.unsold {
+      background-color: #dc3545;
+    }
+
+    .btn.unsold:hover {
+      background-color: #c82333;
+    }
+
+    .btn.end {
+      background-color: #28a745;
+    }
+
+    .btn.end:hover {
+      background-color: #218838;
+    }
+
+    #timer {
+      font-size: 1.5rem;
+      color: #ff4c4c;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .budget-display {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    select, input[type="number"] {
+      width: 80%;
+      padding: 6px;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+      align-self: center;
+    }
+
+    select {
+      background-color: #f0f0f0;
+    }
+
+
+   .bidding-history table {
+      display: block;
+      overflow-x: auto;
+    }
+    .bidding-history{
+      padding-bottom: 100px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auction-container">
+    <div class="player-info">
+      <h2>Current Player: <span id="player-name">Loading...</span></h2>
+      <p>Role: <span id="player-role">-</span></p>
+      <p>Base Price: ₹<span id="base-price">-</span> Lakhs</p>
+      <p>Country: <span id="country">-</span></p>
+      <p>Batting Style: <span id="batting-style">-</span></p>
+      <p>Bowling Style: <span id="bowling-style">-</span></p>
+      <p>IPL Matches: <span id="ipl-matches">-</span></p>
+      <p>Capped: <span id="capped-status">-</span></p>
+    </div>
+
+    <div id="timer">Time Remaining: 30s</div>
+
+    <div class="bidding-history">
+      <h3>Enter Bidding History</h3>
+      <table id="bid-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Bid Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="bids-body">
+          <tr>
+            <td>
+              <select onchange="resetTimer()">
+                <option value="">Select Team</option>
+                <option>CSK</option>
+                <option>MI</option>
+                <option>RCB</option>
+                <option>GT</option>
+                <option>RR</option>
+                <option>KKR</option>
+                <option>SRH</option>
+                <option>LSG</option>
+                <option>PBKS</option>
+                <option>DC</option>
+              </select>
+            </td>
+            <td><input type="number" placeholder="Amount" oninput="resetTimer()" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn" onclick="addBidRow()">Add Another Bid</button>
+    </div>
+
+    <div class="budget-display" id="budget-display"></div>
+
+    <button class="btn" onclick="finalizeSale()">Sell to Highest Bidder</button>
+    <button class="btn unsold" onclick="markUnsold()">Mark Unsold</button>
+    <button class="btn end" onclick="endAuction()">End Auction</button>
+  </div>
+
+  <script>
+    let timerInterval;
+    let timeLeft = 30;
+    window.currentPlayerId = null;
+    let teamBudgets = {};  // Declare the variable here
+  
+    // Fetch team budgets and update display
+    fetch("getTeamBudgets.php")
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          teamBudgets = data;  // Assign the fetched data to the teamBudgets variable
+          updateBudgetDisplay();
+        }
+      });
+  
+    function updateBudgetDisplay() {
+      let html = '<h3>Remaining Budgets:</h3><ul>';
+      for (const team in teamBudgets) {
+        html += `<li>${team}: ₹${teamBudgets[team]} Lakhs</li>`;
+      }
+      html += '</ul>';
+      document.getElementById("budget-display").innerHTML = html;
+    }
+  
+    // Fetch next player for auction
+    fetch("getNextPlayer.php")
+      .then(res => res.json())
+      .then(player => {
+        if (player.error) {
+          alert(player.error);
+        } else {
+          window.currentPlayerId = player.id;
+          document.getElementById("player-name").textContent = player.name;
+          document.getElementById("player-role").textContent = player.role;
+          document.getElementById("base-price").textContent = player.base_price;
+          document.getElementById("country").textContent = player.country;
+          document.getElementById("batting-style").textContent = player.batting_style;
+          document.getElementById("bowling-style").textContent = player.bowling_style;
+          document.getElementById("ipl-matches").textContent = player.ipl_matches;
+          document.getElementById("capped-status").textContent = player.capped_status;
+          startTimer();
+        }
+      });
+  
+    function addBidRow() {
+      const tbody = document.getElementById("bids-body");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>
+          <select onchange="resetTimer()">
+            <option value="">Select Team</option>
+            <option>CSK</option>
+            <option>MI</option>
+            <option>RCB</option>
+            <option>GT</option>
+            <option>RR</option>
+            <option>KKR</option>
+            <option>SRH</option>
+            <option>LSG</option>
+            <option>PBKS</option>
+            <option>DC</option>
+          </select>
+        </td>
+        <td><input type="number" placeholder="Amount" oninput="resetTimer()" /></td>
+      `;
+      tbody.appendChild(row);
+      resetTimer();
+    }
+  
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timeLeft = 30;
+      document.getElementById("timer").textContent = `Time Remaining: ${timeLeft}s`;
+      startTimer();
+    }
+  
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = `Time Remaining: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          autoFinalize();
+        }
+      }, 1000);
+    }
+  
+    function autoFinalize() {
+      const rows = document.querySelectorAll("#bids-body tr");
+      let maxBid = 0;
+      let winningTeam = "";
+  
+      rows.forEach(row => {
+        const team = row.cells[0].querySelector("select").value;
+        const bid = parseInt(row.cells[1].querySelector("input").value);
+        if (!isNaN(bid) && bid > maxBid) {
+          maxBid = bid;
+          winningTeam = team;
+        }
+      });
+  
+      if (!winningTeam) {
+        markUnsold();
+      } else {
+        finalizeSale();
+      }
+    }
+  
+    function finalizeSale() {
+      const rows = document.querySelectorAll("#bids-body tr");
+      let maxBid = 0;
+      let winningTeam = "";
+  
+      rows.forEach(row => {
+        const team = row.cells[0].querySelector("select").value;
+        const bid = parseInt(row.cells[1].querySelector("input").value);
+        if (!isNaN(bid) && bid > maxBid) {
+          maxBid = bid;
+          winningTeam = team;
+        }
+      });
+  
+      if (!winningTeam) {
+        alert("Please select a valid team.");
+        return;
+      }
+  
+      // Check if the winning team's budget is sufficient
+      if (teamBudgets[winningTeam] < maxBid) {
+        alert("Not enough budget for " + winningTeam + ". Bid is invalid.");
+        return;
+      }
+  
+      fetch("finalizeSale.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerId: window.currentPlayerId,
+          team: winningTeam,
+          amount: maxBid
+        })
+      })
+      .then(res => res.text())
+      .then(console.log)
+      .then(response => {
+        alert("Player sold to " + winningTeam + " for ₹" + maxBid);
+        teamBudgets[winningTeam] -= maxBid; // Deduct the bid amount from the team's budget
+        updateBudgetDisplay(); // Update the displayed budget
+        window.location.reload();
+      });
+    }
+  
+    function markUnsold() {
+      if (!window.currentPlayerId) return;
+      fetch("finalizeSale.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerId: window.currentPlayerId,
+          team: "UNSOLD",
+          amount: 0
+        })
+      })
+        .then(res => res.text())
+        .then(response => {
+          alert("Player marked as UNSOLD.");
+          window.location.reload();
+        });
+    }
+  
+    function endAuction() {
+      if (confirm("Are you sure you want to end the auction?")) {
+        window.location.href = "auction-summarypage.html";
+      }
+    }
+  
+    updateBudgetDisplay(); // Initial call
+  </script>
+</body>
+</html>

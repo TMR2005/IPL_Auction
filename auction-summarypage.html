@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auction Summary - IPL Admin</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .summary-container {
+      max-width: 1000px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background-color: #0056b3;
+    }
+
+    select {
+      padding: 10px;
+      margin: 1rem auto;
+      display: block;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="summary-container">
+    <h1>IPL Auction Summary</h1>
+
+    <select id="team-select">
+      <option value="ALL">All Teams</option>
+      <option value="CSK">CSK</option>
+      <option value="MI">MI</option>
+      <option value="RCB">RCB</option>
+      <option value="GT">GT</option>
+      <option value="RR">RR</option>
+      <option value="KKR">KKR</option>
+      <option value="SRH">SRH</option>
+      <option value="LSG">LSG</option>
+      <option value="PBKS">PBKS</option>
+      <option value="DC">DC</option>
+      <option value="UNSOLD">UNSOLD</option>
+    </select>
+
+    <h2 id="team-heading">Players</h2>
+
+    <table id="sold-players-table">
+      <thead>
+        <tr>
+          <th>Player Name</th>
+          <th>Team</th>
+        </tr>
+      </thead>
+      <tbody id="sold-players-body"></tbody> <!-- Added missing ID -->
+    </table>
+
+    <a href="dashboard.html" class="back-btn">Return to Dashboard</a>
+  </div>
+
+  <script>
+    let allData = [];
+
+    function renderPlayers(team = "ALL") {
+      const soldBody = document.getElementById("sold-players-body");
+      const teamHeading = document.getElementById("team-heading");
+      soldBody.innerHTML = "";
+
+      const filtered = team === "ALL"
+        ? allData
+        : allData.filter(player => player.team === team);
+
+      teamHeading.textContent = `Showing players for: ${team}`;
+
+      if (filtered.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="2">No players found for selected team.</td>`;
+        soldBody.appendChild(row);
+        return;
+      }
+
+      filtered.forEach(player => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${player.player_name}</td>
+          <td>${player.team}</td>
+        `;
+        soldBody.appendChild(row);
+      });
+    }
+
+    fetch("getAuctionSummary.php")
+      .then(res => res.json())
+      .then(data => {
+        allData = data; // no need to access .soldPlayers, use directly
+        renderPlayers();
+
+        document.getElementById("team-select").addEventListener("change", (e) => {
+          renderPlayers(e.target.value);
+        });
+      });
+  </script>
+</body>
+</html>

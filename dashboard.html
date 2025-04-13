@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPL Auction Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f6fb;
+    }
+    .dashboard {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background: #1c1c3c;
+      color: #fff;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+      color: #ffc107;
+    }
+    .stat {
+      margin: 20px 0;
+      background: #2d2d4f;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .stat i {
+      color: #ffc107;
+      margin-right: 10px;
+    }
+    .stat strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 40px;
+    }
+    .main-content h1 {
+      font-size: 36px;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .main-content button {
+      padding: 15px 25px;
+      font-size: 18px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .main-content button:hover {
+      background: #0056b3;
+    }
+    .profile {
+      width: 250px;
+      background: #fff;
+      padding: 20px;
+      text-align: center;
+      border-left: 1px solid #ccc;
+    }
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #007bff;
+      margin-bottom: 15px;
+    }
+    .profile h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    .logout {
+      margin-top: 20px;
+      background: #dc3545;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .logout:hover {
+      background-color: #bb2d3b;
+    }
+    #auction-history {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .auction-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      background-color: #fff;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .auction-card:hover {
+      transform: translateY(-5px);
+    }
+    .auction-card h3 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+    }
+        .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      overflow: auto;
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      border-radius: 8px;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .player-card {
+      background-color: #f9f9f9;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .search-bar {
+      margin: 20px 0;
+      padding: 10px;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .search-bar::placeholder {
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>📊 Dashboard</h2>
+      <div class="stat">
+        <i class="fas fa-gavel"></i>
+        <strong>Auctions Conducted:</strong>
+        <span id="auction-count">Loading...</span>
+      </div>
+      <div class="stat">
+        <i class="fas fa-star"></i>
+        <strong>Rating:</strong>
+        <span id="rating">Coming Soon...</span>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main-content">
+      <h1>Welcome to IPL Auction Admin</h1>
+      <button id="create-auction"><i class="fas fa-plus-circle"></i> Create New Auction</button>
+      <button id="show-players" style="margin-top: 20px;"><i class="fas fa-users"></i> Show Players</button>
+
+      <h2 style="margin-top: 50px; color: #444;">Your Previous Auctions</h2>
+      <div id="auction-history"></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile">
+      <img src="profile.jpg" alt="Profile" class="profile-pic">
+      <h3 id="username">Loading...</h3>
+      <button id="logout" class="logout">Logout</button>
+    </div>
+  </div>
+
+  <!-- Modal for Player Details -->
+  <div id="playerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="closeModal" style="cursor: pointer;">&times;</span>
+        <h2>Player Details</h2>
+      </div>
+      
+<input type="text" id="searchPlayer" class="search-bar" placeholder="Search for a player..." oninput="filterPlayers()">
+<select id="sortPlayers" class="search-bar" onchange="sortPlayers()">
+  <option value="">Sort By</option>
+  <option value="name">Name</option>
+  <option value="price">Reserve Price</option>
+  <option value="country">Country</option>
+</select>
+<div id="players-list">
+  <!-- Player cards will be dynamically inserted here -->
+</div>
+      <div id="players-list">
+        <!-- Player cards will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allPlayers = [];
+  
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch("dashboard.php")
+        .then(response => response.json())
+        .then(data => {
+          if (data.username) {
+            document.getElementById("username").innerText = data.username;
+            document.getElementById("auction-count").innerText = data.no_of_auctions ?? 0;
+  
+            const historyContainer = document.getElementById("auction-history");
+            const grouped = {};
+  
+            let auctionsToDisplay = data.recent_auctions;
+            if (auctionsToDisplay.length < 5) {
+              while (auctionsToDisplay.length < 5) {
+                auctionsToDisplay.push({
+                  auction_id: `Dummy Auction #${auctionsToDisplay.length + 1}`,
+                  player_name: "No players sold yet",
+                  team: "",
+                  amount: ""
+                });
+              }
+            }
+  
+            auctionsToDisplay.forEach(entry => {
+              if (!grouped[entry.auction_id]) grouped[entry.auction_id] = [];
+              grouped[entry.auction_id].push(entry);
+            });
+  
+            for (const auctionId in grouped) {
+              const players = grouped[auctionId];
+              const card = document.createElement("div");
+              card.className = "auction-card";
+              card.onclick = () => {
+                window.location.href = `auction-summary.php?auction_id=${auctionId}`;
+              };
+  
+              card.innerHTML = `
+                <h3>Auction #${auctionId}</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                  ${players.map(p => `
+                    <li><strong>${p.player_name}</strong> – ₹${p.amount}L (${p.team || "No players sold yet"})</li>
+                  `).join("")}
+                </ul>
+              `;
+              historyContainer.appendChild(card);
+            }
+  
+          } else {
+            alert("User not logged in. Redirecting to login page.");
+            window.location.href = "login.html";
+          }
+        })
+        .catch(error => console.error("Error fetching dashboard data:", error));
+  
+      document.getElementById("logout").addEventListener("click", function () {
+        fetch("logout.php").then(() => {
+          window.location.href = "login.html";
+        });
+      });
+  
+      document.getElementById("create-auction").addEventListener("click", function () {
+        window.location.href = "instructions.html";
+      });
+  
+      document.getElementById("show-players").addEventListener("click", function () {
+        fetch("players.php")
+          .then(response => response.json())
+          .then(data => {
+            allPlayers = data;
+            renderPlayers(allPlayers);
+            document.getElementById("playerModal").style.display = "block";
+          })
+          .catch(error => console.error("Error fetching players:", error));
+      });
+  
+      document.getElementById("closeModal").addEventListener("click", function () {
+        document.getElementById("playerModal").style.display = "none";
+      });
+  
+      window.onclick = function (event) {
+        const modal = document.getElementById("playerModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    });
+  
+    function renderPlayers(players) {
+      const playersList = document.getElementById("players-list");
+      playersList.innerHTML = "";
+  
+      players.forEach(player => {
+        const playerCard = document.createElement("div");
+        playerCard.className = "player-card";
+        playerCard.innerHTML = `
+          <strong>${player["First Name"]} ${player["Last Name"]}</strong><br>
+          Country: ${player["Country"]}<br>
+          Role: ${player["Specialism"]}<br>
+          Batting Style: ${player["Batting Style"]}<br>
+          Bowling Style: ${player["Bowling Style"]}<br>
+          Matches: ${player["IPL Matches"]}<br>
+          Capped: ${player["Capped Status"]}<br>
+          Reserve Price: ₹${player["Reserve Price"]}L
+        `;
+        playersList.appendChild(playerCard);
+      });
+    }
+  
+    function filterPlayers() {
+      const searchText = document.getElementById("searchPlayer").value.toLowerCase();
+  
+      const filtered = allPlayers.filter(player => {
+        const fullName = `${player["First Name"]} ${player["Last Name"]}`.toLowerCase();
+        return (
+          fullName.includes(searchText) ||
+          player["Country"].toLowerCase().includes(searchText) ||
+          player["Specialism"].toLowerCase().includes(searchText)
+        );
+      });
+  
+      renderPlayers(filtered);
+    }
+  
+    function sortPlayers() {
+      const criterion = document.getElementById("sortPlayers").value;
+      let sorted = [...allPlayers];
+  
+      if (criterion === "name") {
+        sorted.sort((a, b) => {
+          const nameA = `${a["First Name"]} ${a["Last Name"]}`.toLowerCase();
+          const nameB = `${b["First Name"]} ${b["Last Name"]}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      } else if (criterion === "price") {
+        sorted.sort((a, b) => parseInt(a["Reserve Price"]) - parseInt(b["Reserve Price"]));
+      } else if (criterion === "country") {
+        sorted.sort((a, b) => a["Country"].localeCompare(b["Country"]));
+      }
+  
+      renderPlayers(sorted);
+    }
+  </script>
+  
+  
+</body>
+</html>
